@@ -1,0 +1,43 @@
+{
+  "owner": "mmdbazooka",
+  "repository": "mmdbazooka/ReqLab",
+  "title": "ReqLab \u2014 Product roadmap",
+  "description": "A local-first API testing workspace for thoughtful developers.",
+  "items": [
+    {
+      "title": "Design system, product landing & bilingual experience",
+      "status": "Done",
+      "body": "Responsive product presentation, Tailwind CSS, local fonts, English/Persian with RTL, and persistent light/dark preferences."
+    },
+    {
+      "title": "Request composition & response inspection",
+      "status": "Done",
+      "body": "HTTP methods, URL interpolation, headers, JSON/text bodies, abortable requests, formatted responses and timing."
+    },
+    {
+      "title": "Collections, environments & history",
+      "status": "Done",
+      "body": "Manage collections, environment variables, request replay, history filters and safe collection deletion."
+    },
+    {
+      "title": "Local persistence & portable backups",
+      "status": "Done",
+      "body": "Versioned Zod validation, cross-tab synchronization, storage error feedback, validated JSON import and full-workspace export."
+    },
+    {
+      "title": "Automated verification & portfolio documentation",
+      "status": "Done",
+      "body": "Production build, strict TypeScript, ESLint, Vitest domain tests, and Playwright browser tests. Real screenshots and architecture documentation."
+    },
+    {
+      "title": "Explore collection runner and assertions",
+      "status": "Todo",
+      "body": "Optional future iteration; outside the implemented v1 scope."
+    },
+    {
+      "title": "Publish a public deployment",
+      "status": "Todo",
+      "body": "Choose a hosting provider and connect this repository. No deployment has been created by this setup."
+    }
+  ]
+}
