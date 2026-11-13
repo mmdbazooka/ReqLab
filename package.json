@@ -11,24 +11,25 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@fontsource-variable/manrope": "^5.2.0",
+    "@fontsource-variable/vazirmatn": "^5.2.0",
+    "lucide-react": "^0.468.0",
     "next": "^16.0.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "lucide-react": "^0.468.0",
-    "@fontsource-variable/vazirmatn": "^5.2.0",
-    "@fontsource-variable/manrope": "^5.2.0",
     "zod": "^4.0.0"
   },
   "devDependencies": {
-    "typescript": "^5.9.0",
+    "@playwright/test": "^1.56.0",
+    "@tailwindcss/postcss": "^4.1.0",
     "@types/node": "^24.0.0",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
-    "tailwindcss": "^4.1.0",
-    "@tailwindcss/postcss": "^4.1.0",
     "eslint": "^9.0.0",
     "eslint-config-next": "^16.0.0",
-    "vitest": "^4.0.0",
-    "@playwright/test": "^1.56.0"
+    "prettier": "^3.10.1",
+    "tailwindcss": "^4.1.0",
+    "typescript": "^5.9.0",
+    "vitest": "^4.0.0"
   }
 }

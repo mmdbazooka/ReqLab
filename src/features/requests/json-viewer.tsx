@@ -1,0 +1,3 @@
+"use client";
+/** Tokenize JSON into React text nodes; response bodies are never inserted as HTML. */
+export function JsonViewer({value}:{value:string}){let formatted=value;try{formatted=JSON.stringify(JSON.parse(value),null,2);}catch{/* Plain text is a valid response. */}const tokens=formatted.split(/("(?:\\.|[^"\\])*"\s*:|"(?:\\.|[^"\\])*"|\b(?:true|false|null)\b|\b-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?\b)/g);return <pre className="code-box" tabIndex={0}>{tokens.map((token,i)=>{let cls="";if(token.startsWith('"'))cls=token.trimEnd().endsWith(":")?"json-key":"json-string";else if(/^(true|false|null)$/.test(token))cls="json-boolean";else if(/^-?\d/.test(token))cls="json-number";return <span key={i} className={cls}>{token}</span>;})}</pre>;}
