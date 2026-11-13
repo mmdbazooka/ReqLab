@@ -4,6 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   ArrowUpRight,
+  ChevronDown,
   Clock3,
   Folder,
   Globe2,
@@ -12,25 +13,24 @@ import {
   Plus,
   Search,
   Settings2,
-  ShieldCheck,
   Terminal,
   X,
 } from "lucide-react";
 import { Logo, Modal, PreferencesControls } from "./ui";
 import { usePreferences } from "./preferences";
-import { useRequests as useStore } from "@/features/requests/provider";
+import { useRequests } from "@/features/requests/provider";
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { t } = usePreferences();
   const pathname = usePathname();
   const router = useRouter();
-  const store = useStore();
+  const store = useRequests();
   const [menu, setMenu] = useState(false);
   const [search, setSearch] = useState(false);
   const [query, setQuery] = useState("");
   useEffect(() => {
-    const listener = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-        e.preventDefault();
+    const listener = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === "k") {
+        event.preventDefault();
         setSearch((s) => !s);
       }
     };
@@ -80,136 +80,128 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       href: "/dashboard/workspace?id=" + r.id,
     }));
   return (
-    <div className="app-shell">
-      <button
-        className={"menu-overlay " + (menu ? "open" : "")}
-        aria-label={t("Close navigation", "بستن فهرست")}
-        onClick={() => setMenu(false)}
-      />
-      <aside className={"sidebar " + (menu ? "open" : "")}>
-        <div className="flex justify-between items-start">
-          <Logo />
-          <button
-            className="mobile-menu icon-button"
-            onClick={() => setMenu(false)}
-            aria-label={t("Close navigation", "بستن فهرست")}
-          >
-            <X size={17} />
-          </button>
-        </div>
-        <div className="workspace-label">
-          <span className="workspace-avatar">RL</span>
-          <div>
-            <p className="text-[11px] font-semibold">
-              {t("Personal workspace", "فضای کار شخصی")}
-            </p>
-            <p className="muted text-[9px]">
-              {t("A little space of your own", "یک گوشه برای خودت")}
-            </p>
+    <div className="lab-shell">
+      <header className="lab-header">
+        <div className="lab-header-main">
+          <div className="lab-brand-group">
+            <Logo />
+            <span className="lab-header-divider" />
+            <div className="lab-workspace-name">
+              <span className="lab-avatar">M</span>
+              <span>
+                {t("Personal", "شخصی")}
+                <span className="muted mx-2">/</span>
+                {t("Sandbox", "آزمایشگاه")}
+              </span>
+            </div>
           </div>
-        </div>
-        <button
-          className="button primary w-full mb-4"
-          onClick={() => {
-            router.push("/dashboard/workspace?new=" + crypto.randomUUID());
-            setMenu(false);
-          }}
-        >
-          <Plus size={15} />
-          {t("New request", "درخواست جدید")}
-        </button>
-        <p className="nav-label">{t("WORKSPACE", "فضای کار")}</p>
-        <nav aria-label={t("Main navigation", "فهرست اصلی")}>
-          {nav.map(({ path, icon: Icon, label }) => (
-            <Link
-              href={path}
-              key={path}
-              onClick={() => setMenu(false)}
-              aria-current={pathname === path ? "page" : undefined}
-              className={"sidebar-link " + (pathname === path ? "active" : "")}
-            >
-              <Icon size={16} />
-              {label}
-            </Link>
-          ))}
-        </nav>
-        <div
-          className="mt-8 p-3 rounded-lg"
-          style={{
-            background: "var(--accent-soft)",
-            border: "1px solid var(--line)",
-          }}
-        >
-          <p className="text-[11px] accent-text font-semibold">
-            {t("A request worth keeping?", "درخواستی برای نگه داشتن؟")}
-          </p>
-          <p className="text-[10px] muted mt-2">
-            {t(
-              "Your work stays on this device. Export a backup to take it with you.",
-              "کارت در این دستگاه می‌ماند. برای همراه داشتنش نسخه پشتیبان بگیر.",
-            )}
-          </p>
-          <Link href="/dashboard/settings" className="text-link mt-3">
-            {t("Back up workspace", "پشتیبان‌گیری")}
-            <ArrowUpRight size={12} />
-          </Link>
-        </div>
-        <div className="sidebar-footer">
-          <div className="flex items-center gap-2 text-[10px] muted">
-            <ShieldCheck size={13} />
-            <span>{t("Local-first workspace", "فضای کار با ذخیره محلی")}</span>
-            <span className="status-dot ms-auto" />
-          </div>
-          <p className="text-[9px] muted mt-3">
-            {t(
-              "No account. No cloud. Just you.",
-              "بدون حساب. بدون ابر. فقط تو.",
-            )}
-          </p>
-        </div>
-      </aside>
-      <div className="app-main">
-        <header className="app-topbar">
-          <div className="flex items-center gap-3">
+          <div className="lab-header-tools">
             <button
-              className="mobile-menu icon-button"
-              onClick={() => setMenu(true)}
-              aria-label={t("Open navigation", "باز کردن فهرست")}
+              className="lab-search"
+              onClick={() => setSearch(true)}
+              aria-label={t("Search your workspace", "جست‌وجو در فضای کار")}
             >
-              <Menu size={19} />
-            </button>
-            <button className="search-trigger" onClick={() => setSearch(true)}>
               <Search size={15} />
-              {t("Search your workspace…", "جست‌وجو در فضای کار…")}
+              <span>{t("Find an endpoint…", "جست‌وجوی آدرس…")}</span>
               <kbd>⌘ K</kbd>
             </button>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="badge hidden sm:inline-flex">
-              <span className="status-dot" />
-              {t("Local workspace", "فضای محلی")}
-            </span>
             <PreferencesControls />
+            <button
+              className="mobile-menu icon-button"
+              aria-label={
+                menu
+                  ? t("Close navigation", "بستن فهرست")
+                  : t("Open navigation", "باز کردن فهرست")
+              }
+              aria-expanded={menu}
+              aria-controls="lab-navigation"
+              onClick={() => setMenu((v) => !v)}
+            >
+              {menu ? <X size={19} /> : <Menu size={19} />}
+            </button>
           </div>
-        </header>
-        <main className="app-content fade-in">
-          {store.error && (
-            <div className="notice error" role="alert">
-              {t(
-                "Browser storage is unavailable, full, or contains invalid data. Changes may only last this session. Export a backup in Settings.",
-                "حافظه مرورگر در دسترس نیست، پر شده یا داده نامعتبر دارد. ممکن است تغییرات فقط در این نشست بمانند؛ از تنظیمات پشتیبان بگیر.",
-              )}
-            </div>
+        </div>
+        <div className="lab-navigation-row">
+          <nav
+            id="lab-navigation"
+            className={"lab-nav " + (menu ? "open" : "")}
+            aria-label={t("Main navigation", "فهرست اصلی")}
+          >
+            {nav.map(({ path, icon: Icon, label }) => (
+              <Link
+                key={path}
+                href={path}
+                aria-current={pathname === path ? "page" : undefined}
+                className={
+                  "lab-nav-link " + (pathname === path ? "active" : "")
+                }
+                onClick={() => setMenu(false)}
+              >
+                <Icon size={14} />
+                {label}
+              </Link>
+            ))}
+          </nav>
+          <div className="lab-environment">
+            <span className="status-dot" />
+            <select
+              aria-label={t("Active environment", "محیط فعال")}
+              value={store.data.activeEnvironmentId || ""}
+              onChange={(e) =>
+                store.update((s) => ({
+                  ...s,
+                  activeEnvironmentId: e.target.value || null,
+                }))
+              }
+            >
+              <option value="">{t("No environment", "بدون محیط")}</option>
+              {store.data.environments.map((env) => (
+                <option key={env.id} value={env.id}>
+                  {env.name}
+                </option>
+              ))}
+            </select>
+            <ChevronDown size={12} />
+          </div>
+        </div>
+      </header>
+      <main className="lab-content fade-in">
+        {store.error && (
+          <div className="notice error" role="alert">
+            {t(
+              "Browser storage is unavailable, full, or contains invalid data. Changes may only last this session. Export a backup in Settings.",
+              "حافظه مرورگر در دسترس نیست، پر شده یا داده نامعتبر دارد. ممکن است تغییرات فقط در این نشست بمانند؛ از تنظیمات پشتیبان بگیر.",
+            )}
+          </div>
+        )}
+        {store.ready ? (
+          children
+        ) : (
+          <div className="empty-state" role="status">
+            {t("Opening your workspace…", "در حال باز کردن فضای کار…")}
+          </div>
+        )}
+      </main>
+      <footer className="lab-statusbar">
+        <span>
+          <span className="status-dot" />
+          {t("All data on this device", "همه داده‌ها روی این دستگاه")}
+        </span>
+        <button
+          onClick={() =>
+            router.push("/dashboard/workspace?new=" + crypto.randomUUID())
+          }
+        >
+          <Plus size={12} />
+          {t("New request", "درخواست جدید")}
+        </button>
+        <span>
+          {t(
+            "Built to figure things out.",
+            "برای فهمیدن، ساختن و دوباره امتحان کردن.",
           )}
-          {store.ready ? (
-            children
-          ) : (
-            <div className="empty-state" role="status">
-              {t("Opening your workspace…", "در حال باز کردن فضای کار…")}
-            </div>
-          )}
-        </main>
-      </div>
+        </span>
+      </footer>
       <Modal
         open={search}
         onClose={() => setSearch(false)}

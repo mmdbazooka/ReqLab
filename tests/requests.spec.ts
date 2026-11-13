@@ -155,3 +155,29 @@ test("an in-flight request can be cancelled and is recorded", async ({
   await expect(page.locator("tbody tr")).toHaveCount(1);
   await expect(page.locator("tbody")).toContainText("Error");
 });
+
+test("landing examples and workbench selection open the corresponding request", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page
+    .getByRole("button", { name: "POST Create a post", exact: true })
+    .click();
+  await expect(page.locator(".rl-demo-response")).toContainText("201 Created");
+  await page
+    .getByRole("link", { name: "Open this example", exact: true })
+    .click();
+  await expect(
+    page.getByRole("textbox", { name: "Request name", exact: true }),
+  ).toHaveValue("Create a post");
+  await expect(
+    page.getByRole("combobox", { name: "HTTP method", exact: true }),
+  ).toHaveValue("POST");
+  await page.goto("/dashboard");
+  await page.getByRole("button", { name: /POST Create a post/ }).click();
+  await expect(page.locator(".lab-code-url")).toContainText("/posts");
+  await page.getByRole("link", { name: "Open request", exact: true }).click();
+  await expect(
+    page.getByRole("textbox", { name: "Request name", exact: true }),
+  ).toHaveValue("Create a post");
+});

@@ -1,236 +1,331 @@
 "use client";
+import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
-  ArrowUpRight,
   ArrowRight,
+  ArrowUpRight,
+  Check,
+  ChevronRight,
   Clock3,
+  Code2,
   Folder,
   Plus,
-  Send,
   Terminal,
   Zap,
 } from "lucide-react";
 import { useRequests } from "@/features/requests/provider";
 import { usePreferences } from "@/components/preferences";
-import { PageTitle, ArrowLink, EmptyState } from "@/components/ui";
+import { ArrowLink } from "@/components/ui";
+
 export default function Overview() {
   const { data } = useRequests();
   const { t } = usePreferences();
+  const router = useRouter();
+  const [selected, setSelected] = useState("");
+  const request =
+    data.requests.find((r) => r.id === selected) || data.requests[0];
+  const environment = data.environments.find(
+    (e) => e.id === data.activeEnvironmentId,
+  );
   const successful = data.history.filter(
     (h) => h.response && h.response.status < 400,
   ).length;
-  const durations = data.history.flatMap((h) =>
-    h.response ? [h.response.duration] : [],
-  );
-  const average = durations.length
-    ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length)
-    : null;
   return (
-    <>
-      <PageTitle
-        eyebrow={t("YOUR API PLAYGROUND", "زمین بازی API تو")}
-        title={t("Ready when you are.", "هر وقت تو آماده باشی.")}
-        description={t(
-          "A fresh perspective on your APIs. Let’s build something that works.",
-          "نگاهی تازه به APIهایت؛ بیا چیزی بسازیم که کار کند.",
-        )}
-        action={
-          <Link href="/dashboard/workspace" className="button primary">
-            <Plus size={15} />
-            {t("New request", "درخواست جدید")}
-          </Link>
-        }
-      />
-      <div className="stats-grid">
-        {[
-          {
-            icon: Folder,
-            label: t("Collections", "کالکشن‌ها"),
-            value: data.collections.length,
-            foot: t("A place for every endpoint", "جایی برای هر آدرس"),
-          },
-          {
-            icon: Terminal,
-            label: t("Saved requests", "درخواست‌های ذخیره‌شده"),
-            value: data.requests.length,
-            foot: t("Ready for your next session", "آماده نشست بعدی تو"),
-          },
-          {
-            icon: Zap,
-            label: t("Successful runs", "اجراهای موفق"),
-            value: successful,
-            foot: t("In your recent history", "در تاریخچه اخیر"),
-          },
-          {
-            icon: Clock3,
-            label: t("Average response", "میانگین زمان پاسخ"),
-            value: average === null ? "—" : average + " ms",
-            foot: t("Based on recent responses", "بر اساس پاسخ‌های اخیر"),
-          },
-        ].map(({ icon: Icon, label, value, foot }) => (
-          <div className="stat-card" key={label}>
-            <div className="stat-top">
-              {label}
-              <Icon size={15} />
-            </div>
-            <p className="stat-value">{value}</p>
-            <p className="stat-foot">{foot}</p>
-          </div>
-        ))}
+    <div className="lab-overview">
+      <header className="lab-greeting">
+        <div>
+          <p className="lab-breadcrumb">
+            {t("PERSONAL WORKSPACE", "فضای کار شخصی")}
+            <ChevronRight size={11} />
+            {t("LAUNCHPAD", "میز شروع")}
+          </p>
+          <h1>{t("Okay, what are we building?", "خب، امروز چی می‌سازیم؟")}</h1>
+          <p className="muted">
+            {t(
+              "Pick an endpoint. Poke around. See what comes back.",
+              "یک آدرس انتخاب کن، کمی کنجکاوی کن و ببین چه پاسخی می‌گیری.",
+            )}
+          </p>
+        </div>
+        <button
+          className="button primary"
+          onClick={() =>
+            router.push("/dashboard/workspace?new=" + crypto.randomUUID())
+          }
+        >
+          <Plus size={16} />
+          {t("New request", "درخواست جدید")}
+        </button>
+      </header>
+      <div className="lab-metrics">
+        <span>
+          <Folder size={14} />
+          <strong>{data.collections.length}</strong>
+          {t("collections", "کالکشن")}
+        </span>
+        <span>
+          <Terminal size={14} />
+          <strong>{data.requests.length}</strong>
+          {t("saved requests", "درخواست ذخیره‌شده")}
+        </span>
+        <span>
+          <Check size={14} />
+          <strong>{successful}</strong>
+          {t("successful recent runs", "اجرای موفق اخیر")}
+        </span>
+        <Link href="/dashboard/history">
+          {t("Session history", "تاریخچه نشست")}
+          <ArrowUpRight size={12} />
+        </Link>
       </div>
-      <div className="dashboard-grid">
-        <section className="card">
-          <div className="section-title">
-            <h3>{t("Your collections", "کالکشن‌های تو")}</h3>
-            <ArrowLink href="/dashboard/collections">
-              {t("View all", "دیدن همه")}
-            </ArrowLink>
+      <div className="lab-workbench-grid">
+        <section className="lab-panel lab-start-panel">
+          <div className="lab-panel-heading">
+            <h2>
+              <Terminal size={16} />
+              {t("The workbench", "میز آزمایش")}
+            </h2>
+            <span className="lab-label">
+              {t("PICK UP & GO", "انتخاب کن و شروع کن")}
+            </span>
           </div>
-          {data.collections.slice(0, 4).map((c) => (
-            <div key={c.id} className="list-row">
-              <span className="row-icon">
-                <Folder size={16} />
+          <div className="lab-workbench">
+            <div className="lab-endpoint-list">
+              {data.requests.slice(0, 5).map((r) => (
+                <button
+                  key={r.id}
+                  className={
+                    "lab-endpoint " + (request?.id === r.id ? "selected" : "")
+                  }
+                  onClick={() => setSelected(r.id)}
+                  aria-pressed={request?.id === r.id}
+                >
+                  <span className={"method " + r.method.toLowerCase()}>
+                    {r.method}
+                  </span>
+                  <span>{r.name}</span>
+                  <ChevronRight size={13} />
+                </button>
+              ))}
+              <button
+                className="lab-endpoint-add"
+                onClick={() =>
+                  router.push("/dashboard/workspace?new=" + crypto.randomUUID())
+                }
+              >
+                <Plus size={13} />
+                {t("Something new…", "یک چیز تازه…")}
+              </button>
+            </div>
+            <div className="lab-request-preview">
+              {request ? (
+                <>
+                  <div className="lab-file-tab">
+                    <Code2 size={13} />
+                    {request.name}
+                    <span className="lab-tab-dot" />
+                  </div>
+                  <div className="lab-preview-code">
+                    <p className="lab-comment">
+                      {t(
+                        "// A little curiosity goes a long way.",
+                        "// کمی کنجکاوی، کلی کشف تازه.",
+                      )}
+                    </p>
+                    <p className="lab-code-url" dir="ltr">
+                      <span
+                        className={"method " + request.method.toLowerCase()}
+                      >
+                        {request.method}
+                      </span>
+                      {request.url}
+                    </p>
+                    <div className="lab-header-preview" dir="ltr">
+                      {request.headers
+                        .filter((h) => h.enabled && h.key)
+                        .map((h) => (
+                          <p key={h.id}>
+                            <span>{h.key}</span>:{" "}
+                            {/(authorization|token|secret|key)/i.test(h.key)
+                              ? "••••••••"
+                              : h.value}
+                          </p>
+                        ))}
+                      {request.body && <pre>{request.body}</pre>}
+                    </div>
+                  </div>
+                  <div className="lab-preview-bottom">
+                    <span className="mono muted">
+                      <span className="status-dot" />
+                      {environment?.name || t("No environment", "بدون محیط")}
+                    </span>
+                    <Link
+                      className="button primary"
+                      href={"/dashboard/workspace?id=" + request.id}
+                    >
+                      {t("Open request", "باز کردن درخواست")}
+                      <ArrowRight size={14} />
+                    </Link>
+                  </div>
+                </>
+              ) : (
+                <div className="empty-state">
+                  <Terminal size={25} />
+                  <h3>{t("Start with a question.", "با یک سؤال شروع کن.")}</h3>
+                  <p className="muted text-xs">
+                    {t(
+                      "What should your API do? Create your first request and find out.",
+                      "API تو قرار است چه کند؟ اولین درخواست را بساز و امتحان کن.",
+                    )}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+        <aside className="lab-activity">
+          <div className="lab-panel-heading">
+            <h2>
+              <Clock3 size={15} />
+              {t("Just happened", "همین حالا گذشت")}
+            </h2>
+            <Link
+              href="/dashboard/history"
+              aria-label={t("View history", "دیدن تاریخچه")}
+            >
+              <ArrowUpRight size={15} />
+            </Link>
+          </div>
+          {data.history.length ? (
+            <div className="lab-activity-feed">
+              {data.history.slice(0, 5).map((h) => (
+                <Link
+                  key={h.id}
+                  href={"/dashboard/workspace?history=" + h.id}
+                  className="lab-activity-item"
+                >
+                  <span
+                    className={
+                      "lab-result-dot " +
+                      (h.response && h.response.status < 400
+                        ? "success"
+                        : "failure")
+                    }
+                  />
+                  <div>
+                    <p>{h.request.name}</p>
+                    <span className="mono muted">
+                      {h.request.method} ·{" "}
+                      {h.response?.status || t("Error", "خطا")} ·{" "}
+                      {h.response ? h.response.duration + " ms" : "—"}
+                    </span>
+                  </div>
+                  <ArrowUpRight size={12} />
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="lab-empty-activity">
+              <div className="lab-wave" aria-hidden="true">
+                <span />
+                <span />
+                <span />
+                <span />
+                <span />
+                <span />
+                <span />
+                <span />
+                <span />
+              </div>
+              <h3>{t("Quiet in here. For now.", "فعلاً خبری نیست.")}</h3>
+              <p>
+                {t(
+                  "Your requests leave a trail here. Try an example to get things moving.",
+                  "رد درخواست‌هایت اینجا می‌ماند. یک نمونه را امتحان کن تا شروع شود.",
+                )}
+              </p>
+            </div>
+          )}
+          <div className="lab-tip">
+            <Zap size={15} />
+            <div>
+              <h3>{t("One less thing to type", "یک کار تکراری کمتر")}</h3>
+              <p>
+                {t(
+                  "Put {{baseUrl}} in your URL. Change the environment, not every request.",
+                  "{{baseUrl}} را در آدرس بگذار؛ به‌جای تک‌تک درخواست‌ها، فقط محیط را عوض کن.",
+                )}
+              </p>
+              <Link href="/dashboard/environments">
+                {t("Set up your variables", "تنظیم متغیرها")}
+                <ArrowRight size={12} />
+              </Link>
+            </div>
+          </div>
+        </aside>
+      </div>
+      <section className="lab-collection-section">
+        <div className="lab-panel-heading">
+          <h2>{t("Your APIs, in order", "APIهای تو، مرتب و آماده")}</h2>
+          <ArrowLink href="/dashboard/collections">
+            {t("Manage collections", "مدیریت کالکشن‌ها")}
+          </ArrowLink>
+        </div>
+        <div className="lab-collection-table">
+          {data.collections.map((c, i) => (
+            <div className="lab-collection-line" key={c.id}>
+              <span className="lab-collection-icon">
+                <Folder size={19} />
               </span>
-              <div className="row-copy">
+              <div className="lab-collection-description">
                 <h3>{c.name}</h3>
                 <p>{c.description}</p>
-                <div className="flex gap-2 mt-3 flex-wrap">
-                  {data.requests
-                    .filter((r) => r.collectionId === c.id)
-                    .slice(0, 3)
-                    .map((r) => (
-                      <Link
-                        className="tag !text-[9px]"
-                        href={"/dashboard/workspace?id=" + r.id}
-                        key={r.id}
-                      >
-                        <span className="font-mono">{r.method}</span>
-                        {r.name}
-                      </Link>
-                    ))}
-                </div>
               </div>
-              <span className="badge">
-                {data.requests.filter((r) => r.collectionId === c.id).length}
+              <div className="lab-collection-methods">
+                {[
+                  ...new Set(
+                    data.requests
+                      .filter((r) => r.collectionId === c.id)
+                      .map((r) => r.method),
+                  ),
+                ].map((method) => (
+                  <span
+                    className={"method " + method.toLowerCase()}
+                    key={method}
+                  >
+                    {method}
+                  </span>
+                ))}
+              </div>
+              <span className="muted mono text-xs">
+                {String(
+                  data.requests.filter((r) => r.collectionId === c.id).length,
+                ).padStart(2, "0")}{" "}
+                {t("requests", "درخواست")}
+              </span>
+              <Link
+                href="/dashboard/collections"
+                className="icon-button"
+                aria-label={t("Open collection ", "باز کردن کالکشن ") + c.name}
+              >
+                <ArrowUpRight size={16} />
+              </Link>
+              <span className="lab-line-number" aria-hidden="true">
+                {i + 1}
               </span>
             </div>
           ))}
           {!data.collections.length && (
-            <p className="muted text-xs py-8">
+            <p className="muted text-sm p-6">
               {t(
-                "Create a collection to organize your API.",
-                "برای مرتب کردن APIها یک کالکشن بساز.",
+                "No collections yet. A little organization starts here.",
+                "هنوز کالکشنی نیست؛ نظم از همین‌جا شروع می‌شود.",
               )}
             </p>
           )}
-        </section>
-        <section className="card">
-          <div className="section-title">
-            <h3>{t("A little momentum", "کمی شتاب برای ادامه")}</h3>
-            <Zap size={16} className="accent-text" />
-          </div>
-          <p className="muted text-[11px]">
-            {t(
-              "Response time · recent requests",
-              "زمان پاسخ · درخواست‌های اخیر",
-            )}
-          </p>
-          <div
-            className="chart-bars"
-            aria-label={t("Recent response durations", "زمان پاسخ‌های اخیر")}
-          >
-            {durations.length ? (
-              durations
-                .slice(0, 10)
-                .reverse()
-                .map((ms, i) => (
-                  <span
-                    title={`${ms} ms`}
-                    key={i}
-                    style={{
-                      height:
-                        Math.max(5, (ms / Math.max(...durations)) * 100) + "%",
-                    }}
-                  />
-                ))
-            ) : (
-              <p className="muted text-xs self-center mx-auto">
-                {t(
-                  "Your first run starts the story.",
-                  "اولین اجرا داستان را شروع می‌کند.",
-                )}
-              </p>
-            )}
-          </div>
-          <div className="flex justify-between text-[9px] muted mt-3">
-            <span>{t("Earlier", "قدیمی‌تر")}</span>
-            <span>{t("Latest", "تازه‌ترین")}</span>
-          </div>
-          <div
-            className="mt-6 p-4 rounded-lg"
-            style={{ background: "var(--accent-soft)" }}
-          >
-            <p className="accent-text text-xs font-semibold">
-              {t("Small tip. Big time saver.", "نکته کوچک؛ صرفه‌جویی بزرگ.")}
-            </p>
-            <p className="muted text-[11px] mt-2">
-              {t(
-                "Use {{baseUrl}} in your requests, then switch environments without changing a single endpoint.",
-                "در درخواست از {{baseUrl}} استفاده کن و بدون تغییر آدرس‌ها، محیط را عوض کن.",
-              )}
-            </p>
-          </div>
-        </section>
-      </div>
-      <section className="card mt-6">
-        <div className="section-title">
-          <h3>{t("Pick up where you left off", "از همان‌جا ادامه بده")}</h3>
-          <ArrowLink href="/dashboard/history">
-            {t("Full history", "کل تاریخچه")}
-          </ArrowLink>
         </div>
-        {data.history.length ? (
-          data.history.slice(0, 4).map((h) => (
-            <Link
-              key={h.id}
-              href={"/dashboard/workspace?history=" + h.id}
-              className="list-row"
-            >
-              <span className={"method " + h.request.method.toLowerCase()}>
-                {h.request.method}
-              </span>
-              <div className="row-copy">
-                <h3>{h.request.name}</h3>
-                <p className="mono" dir="ltr">
-                  {h.request.url}
-                </p>
-              </div>
-              <span className="badge">
-                {h.response?.status || t("Failed", "ناموفق")}
-              </span>
-              <ArrowUpRight size={14} />
-            </Link>
-          ))
-        ) : (
-          <EmptyState
-            icon={<Send size={22} />}
-            title={t(
-              "Your first request is a click away",
-              "یک کلیک تا اولین درخواست",
-            )}
-            description={t(
-              "Try the example API. Your recent requests will find a home here.",
-              "API نمونه را امتحان کن؛ درخواست‌های اخیر اینجا خانه خواهند داشت.",
-            )}
-            action={
-              <Link className="button" href="/dashboard/workspace?id=get-user">
-                {t("Try an example", "امتحان یک نمونه")}
-                <ArrowRight size={13} />
-              </Link>
-            }
-          />
-        )}
       </section>
-    </>
+    </div>
   );
 }
