@@ -268,13 +268,19 @@ function WorkspaceEditor({
           <button
             type="button"
             className="button"
-            onClick={() => abortRef.current?.abort()}
+            key="cancel"
+            onClick={(event) => {
+              // Aborting resolves fetch immediately. Prevent a re-rendered submit button
+              // from inheriting this click's default form submission.
+              event.preventDefault();
+              abortRef.current?.abort();
+            }}
           >
             <Square size={13} />
             {t("Cancel", "لغو")}
           </button>
         ) : (
-          <button className="button primary" type="submit">
+          <button key="send" className="button primary" type="submit">
             <Send size={14} />
             {t("Send request", "ارسال درخواست")}
           </button>
