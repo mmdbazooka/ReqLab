@@ -1,12 +1,272 @@
 "use client";
-import { useRef,useState } from "react";
-import { Check,Download,Globe2,HardDrive,LockKeyhole,Monitor,RotateCcw,ShieldCheck,Upload } from "lucide-react";
-import { PageTitle,Modal } from "@/components/ui";
+import { useRef, useState } from "react";
+import {
+  Check,
+  Download,
+  Globe2,
+  HardDrive,
+  LockKeyhole,
+  Monitor,
+  RotateCcw,
+  ShieldCheck,
+  Upload,
+} from "lucide-react";
+import { PageTitle, Modal } from "@/components/ui";
 import { usePreferences } from "@/components/preferences";
 import { downloadJson } from "@/lib/utils";
 import { useRequests as useStore } from "@/features/requests/provider";
-import { initialWorkspace,workspaceSchema,type Workspace } from "@/features/requests/model";
-export default function Settings(){const {data,update}=useStore();const {t,theme,locale,toggleTheme,toggleLocale}=usePreferences();const [pending,setPending]=useState<Workspace|null>(null);const [reset,setReset]=useState(false);const [status,setStatus]=useState("");const fileRef=useRef<HTMLInputElement>(null);const size=new Blob([JSON.stringify(data)]).size;
- const importFile=async(file:File|undefined)=>{if(!file)return;setStatus("");try{if(file.size>10*1024*1024)throw new Error("size");const parsed=workspaceSchema.parse(JSON.parse(await file.text()));setPending(parsed);}catch{setStatus(t("Could not read this backup. Choose a valid ReqLab v1 JSON export under 10 MB.","پشتیبان خوانده نشد؛ یک فایل JSON معتبر نسخه ۱ از ReqLab با حجم کمتر از ۱۰ مگابایت انتخاب کن."));}finally{if(fileRef.current)fileRef.current.value="";}};
- return <><PageTitle eyebrow={t("MAKE YOURSELF AT HOME","اینجا را خانه خودت کن")} title={t("Your workspace. Your way.","فضای کار تو؛ به سلیقه تو.")} description={t("A few small preferences, a little peace of mind, and full ownership of your data.","چند انتخاب کوچک، کمی آسودگی خاطر و مالکیت کامل داده‌هایت.")}/><div className="settings-grid"><div className="space-y-5"><section className="card"><div className="section-title"><h3>{t("Look & feel","ظاهر و حس")}</h3><Monitor size={17} className="muted"/></div><div className="settings-row"><div><h3>{t("Color theme","رنگ پوسته")}</h3><p>{t("A space that matches your mood.","فضایی هم‌حال با تو.")}</p></div><button className="button small" onClick={toggleTheme}>{theme==="dark"?t("Dark · switch to light","تاریک · تغییر به روشن"):t("Light · switch to dark","روشن · تغییر به تاریک")}</button></div><div className="settings-row"><div><h3>{t("Language","زبان")}</h3><p>{t("Comfortable in English. At home in فارسی.","راحت با English؛ در خانه با فارسی.")}</p></div><button className="button small" onClick={toggleLocale}><Globe2 size={13}/>{locale==="en"?"فارسی":"English"}</button></div></section><section className="card"><div className="section-title"><h3>{t("Your data, in your hands","داده‌هایت در دست خودت")}</h3><HardDrive size={17} className="muted"/></div><div className="settings-row"><div><h3>{t("Export a backup","خروجی پشتیبان")}</h3><p>{t("Everything in your workspace, in one JSON file.","تمام فضای کار در یک فایل JSON.")}</p></div><button className="button small" onClick={()=>{downloadJson("reqlab-backup-"+new Date().toISOString().slice(0,10)+".json",data);setStatus(t("Backup downloaded. Keep it somewhere safe.","پشتیبان دانلود شد؛ در جای امن نگهش دار."));}}><Download size={13}/>{t("Export","خروجی")}</button></div><div className="settings-row"><div><h3>{t("Restore a backup","بازیابی پشتیبان")}</h3><p>{t("Import a ReqLab JSON export. Replaces current data.","یک خروجی JSON از ReqLab وارد کن؛ داده فعلی جایگزین می‌شود.")}</p></div><button className="button small" onClick={()=>fileRef.current?.click()}><Upload size={13}/>{t("Import","ورودی")}</button><input ref={fileRef} className="hidden" type="file" accept=".json,application/json" aria-label={t("Import backup file","ورود فایل پشتیبان")} onChange={e=>void importFile(e.target.files?.[0])}/></div><div className="settings-row"><div><h3>{t("Start fresh","شروع تازه")}</h3><p>{t("Restore the example workspace. Export your work first.","بازگرداندن فضای کار نمونه؛ اول از کارت خروجی بگیر.")}</p></div><button className="button small danger" onClick={()=>setReset(true)}><RotateCcw size={13}/>{t("Reset","بازنشانی")}</button></div></section></div><div className="space-y-5"><section className="card"><span className="feature-icon"><ShieldCheck size={22}/></span><h2 className="!text-xl">{t("A little more privacy.","کمی حریم خصوصی بیشتر.")}</h2><p className="muted text-xs leading-7 mt-4">{t("Your workspace is stored in this browser’s local storage. We don’t run a database, collect your workspace, or sync it to a server.","فضای کار تو در حافظه محلی همین مرورگر ذخیره می‌شود؛ دیتابیس یا همگام‌سازی سرور نداریم و داده فضای کارت را جمع‌آوری نمی‌کنیم.")}</p><div className="flex items-center justify-between border-t mt-5 pt-5 text-xs" style={{borderColor:"var(--line)"}}><span className="muted">{t("Workspace size","حجم فضای کار")}</span><span className="mono accent-text">{(size/1024).toFixed(1)} KB</span></div><p className="muted text-[10px] leading-6 mt-5">{t("Browser data can be cleared or evicted. Private browsing may not retain it. Back up regularly before switching devices.","داده مرورگر ممکن است پاک شود یا در حالت خصوصی باقی نماند. پیش از تغییر دستگاه، نسخه پشتیبان بگیر.")}</p></section><section className="card"><LockKeyhole size={18} className="accent-text mb-4"/><h3>{t("Direct by design","ارتباط مستقیم و روشن")}</h3><p className="muted text-[11px] leading-7 mt-3">{t("API calls go directly to the URL you choose. CORS rules apply. Credentials are plain text in local storage and included in backups; never share exports containing secrets.","درخواست مستقیم به URL انتخابی تو ارسال می‌شود و قوانین CORS برقرارند. اطلاعات احراز هویت به شکل متن ساده محلی و در پشتیبان می‌مانند؛ خروجی حاوی رمز را به اشتراک نگذار.")}</p></section></div></div>{status&&<div className="notice mt-6" role="status">{status}</div>}<Modal open={!!pending||reset} onClose={()=>{setPending(null);setReset(false);}} title={pending?t("Restore this workspace?","این فضای کار بازیابی شود؟"):t("Make a fresh start?","از نو شروع کنیم؟")}><p className="muted text-sm">{t("This replaces all current workspace data. Export a backup before continuing. This cannot be undone.","تمام داده‌های فعلی فضای کار جایگزین می‌شوند. قبل از ادامه پشتیبان بگیر؛ این کار برگشت‌پذیر نیست.")}</p><div className="form-actions mt-6"><button className="button" onClick={()=>{setPending(null);setReset(false);}}>{t("Cancel","لغو")}</button><button className="button primary" onClick={()=>{update(pending||initialWorkspace);setPending(null);setReset(false);setStatus(t("Workspace updated.","فضای کار به‌روز شد."));}}><Check size={14}/>{pending?t("Restore backup","بازیابی پشتیبان"):t("Reset workspace","بازنشانی فضای کار")}</button></div></Modal></>;
+import {
+  initialWorkspace,
+  workspaceSchema,
+  type Workspace,
+} from "@/features/requests/model";
+export default function Settings() {
+  const { data, update } = useStore();
+  const { t, theme, locale, toggleTheme, toggleLocale } = usePreferences();
+  const [pending, setPending] = useState<Workspace | null>(null);
+  const [reset, setReset] = useState(false);
+  const [status, setStatus] = useState("");
+  const fileRef = useRef<HTMLInputElement>(null);
+  const size = new Blob([JSON.stringify(data)]).size;
+  const importFile = async (file: File | undefined) => {
+    if (!file) return;
+    setStatus("");
+    try {
+      if (file.size > 10 * 1024 * 1024) throw new Error("size");
+      const parsed = workspaceSchema.parse(JSON.parse(await file.text()));
+      setPending(parsed);
+    } catch {
+      setStatus(
+        t(
+          "Could not read this backup. Choose a valid ReqLab v1 JSON export under 10 MB.",
+          "پشتیبان خوانده نشد؛ یک فایل JSON معتبر نسخه ۱ از ReqLab با حجم کمتر از ۱۰ مگابایت انتخاب کن.",
+        ),
+      );
+    } finally {
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
+  return (
+    <>
+      <PageTitle
+        eyebrow={t("MAKE YOURSELF AT HOME", "اینجا را خانه خودت کن")}
+        title={t("Your workspace. Your way.", "فضای کار تو؛ به سلیقه تو.")}
+        description={t(
+          "A few small preferences, a little peace of mind, and full ownership of your data.",
+          "چند انتخاب کوچک، کمی آسودگی خاطر و مالکیت کامل داده‌هایت.",
+        )}
+      />
+      <div className="settings-grid">
+        <div className="space-y-5">
+          <section className="card">
+            <div className="section-title">
+              <h3>{t("Look & feel", "ظاهر و حس")}</h3>
+              <Monitor size={17} className="muted" />
+            </div>
+            <div className="settings-row">
+              <div>
+                <h3>{t("Color theme", "رنگ پوسته")}</h3>
+                <p>
+                  {t("A space that matches your mood.", "فضایی هم‌حال با تو.")}
+                </p>
+              </div>
+              <button className="button small" onClick={toggleTheme}>
+                {theme === "dark"
+                  ? t("Dark · switch to light", "تاریک · تغییر به روشن")
+                  : t("Light · switch to dark", "روشن · تغییر به تاریک")}
+              </button>
+            </div>
+            <div className="settings-row">
+              <div>
+                <h3>{t("Language", "زبان")}</h3>
+                <p>
+                  {t(
+                    "Comfortable in English. At home in فارسی.",
+                    "راحت با English؛ در خانه با فارسی.",
+                  )}
+                </p>
+              </div>
+              <button className="button small" onClick={toggleLocale}>
+                <Globe2 size={13} />
+                {locale === "en" ? "فارسی" : "English"}
+              </button>
+            </div>
+          </section>
+          <section className="card">
+            <div className="section-title">
+              <h3>{t("Your data, in your hands", "داده‌هایت در دست خودت")}</h3>
+              <HardDrive size={17} className="muted" />
+            </div>
+            <div className="settings-row">
+              <div>
+                <h3>{t("Export a backup", "خروجی پشتیبان")}</h3>
+                <p>
+                  {t(
+                    "Everything in your workspace, in one JSON file.",
+                    "تمام فضای کار در یک فایل JSON.",
+                  )}
+                </p>
+              </div>
+              <button
+                className="button small"
+                onClick={() => {
+                  downloadJson(
+                    "reqlab-backup-" +
+                      new Date().toISOString().slice(0, 10) +
+                      ".json",
+                    data,
+                  );
+                  setStatus(
+                    t(
+                      "Backup downloaded. Keep it somewhere safe.",
+                      "پشتیبان دانلود شد؛ در جای امن نگهش دار.",
+                    ),
+                  );
+                }}
+              >
+                <Download size={13} />
+                {t("Export", "خروجی")}
+              </button>
+            </div>
+            <div className="settings-row">
+              <div>
+                <h3>{t("Restore a backup", "بازیابی پشتیبان")}</h3>
+                <p>
+                  {t(
+                    "Import a ReqLab JSON export. Replaces current data.",
+                    "یک خروجی JSON از ReqLab وارد کن؛ داده فعلی جایگزین می‌شود.",
+                  )}
+                </p>
+              </div>
+              <button
+                className="button small"
+                onClick={() => fileRef.current?.click()}
+              >
+                <Upload size={13} />
+                {t("Import", "ورودی")}
+              </button>
+              <input
+                ref={fileRef}
+                className="hidden"
+                type="file"
+                accept=".json,application/json"
+                aria-label={t("Import backup file", "ورود فایل پشتیبان")}
+                onChange={(e) => void importFile(e.target.files?.[0])}
+              />
+            </div>
+            <div className="settings-row">
+              <div>
+                <h3>{t("Start fresh", "شروع تازه")}</h3>
+                <p>
+                  {t(
+                    "Restore the example workspace. Export your work first.",
+                    "بازگرداندن فضای کار نمونه؛ اول از کارت خروجی بگیر.",
+                  )}
+                </p>
+              </div>
+              <button
+                className="button small danger"
+                onClick={() => setReset(true)}
+              >
+                <RotateCcw size={13} />
+                {t("Reset", "بازنشانی")}
+              </button>
+            </div>
+          </section>
+        </div>
+        <div className="space-y-5">
+          <section className="card">
+            <span className="feature-icon">
+              <ShieldCheck size={22} />
+            </span>
+            <h2 className="!text-xl">
+              {t("A little more privacy.", "کمی حریم خصوصی بیشتر.")}
+            </h2>
+            <p className="muted text-xs leading-7 mt-4">
+              {t(
+                "Your workspace is stored in this browser’s local storage. We don’t run a database, collect your workspace, or sync it to a server.",
+                "فضای کار تو در حافظه محلی همین مرورگر ذخیره می‌شود؛ دیتابیس یا همگام‌سازی سرور نداریم و داده فضای کارت را جمع‌آوری نمی‌کنیم.",
+              )}
+            </p>
+            <div
+              className="flex items-center justify-between border-t mt-5 pt-5 text-xs"
+              style={{ borderColor: "var(--line)" }}
+            >
+              <span className="muted">
+                {t("Workspace size", "حجم فضای کار")}
+              </span>
+              <span className="mono accent-text">
+                {(size / 1024).toFixed(1)} KB
+              </span>
+            </div>
+            <p className="muted text-[10px] leading-6 mt-5">
+              {t(
+                "Browser data can be cleared or evicted. Private browsing may not retain it. Back up regularly before switching devices.",
+                "داده مرورگر ممکن است پاک شود یا در حالت خصوصی باقی نماند. پیش از تغییر دستگاه، نسخه پشتیبان بگیر.",
+              )}
+            </p>
+          </section>
+          <section className="card">
+            <LockKeyhole size={18} className="accent-text mb-4" />
+            <h3>{t("Direct by design", "ارتباط مستقیم و روشن")}</h3>
+            <p className="muted text-[11px] leading-7 mt-3">
+              {t(
+                "API calls go directly to the URL you choose. CORS rules apply. Credentials are plain text in local storage and included in backups; never share exports containing secrets.",
+                "درخواست مستقیم به URL انتخابی تو ارسال می‌شود و قوانین CORS برقرارند. اطلاعات احراز هویت به شکل متن ساده محلی و در پشتیبان می‌مانند؛ خروجی حاوی رمز را به اشتراک نگذار.",
+              )}
+            </p>
+          </section>
+        </div>
+      </div>
+      {status && (
+        <div className="notice mt-6" role="status">
+          {status}
+        </div>
+      )}
+      <Modal
+        open={!!pending || reset}
+        onClose={() => {
+          setPending(null);
+          setReset(false);
+        }}
+        title={
+          pending
+            ? t("Restore this workspace?", "این فضای کار بازیابی شود؟")
+            : t("Make a fresh start?", "از نو شروع کنیم؟")
+        }
+      >
+        <p className="muted text-sm">
+          {t(
+            "This replaces all current workspace data. Export a backup before continuing. This cannot be undone.",
+            "تمام داده‌های فعلی فضای کار جایگزین می‌شوند. قبل از ادامه پشتیبان بگیر؛ این کار برگشت‌پذیر نیست.",
+          )}
+        </p>
+        <div className="form-actions mt-6">
+          <button
+            className="button"
+            onClick={() => {
+              setPending(null);
+              setReset(false);
+            }}
+          >
+            {t("Cancel", "لغو")}
+          </button>
+          <button
+            className="button primary"
+            onClick={() => {
+              update(pending || initialWorkspace);
+              setPending(null);
+              setReset(false);
+              setStatus(t("Workspace updated.", "فضای کار به‌روز شد."));
+            }}
+          >
+            <Check size={14} />
+            {pending
+              ? t("Restore backup", "بازیابی پشتیبان")
+              : t("Reset workspace", "بازنشانی فضای کار")}
+          </button>
+        </div>
+      </Modal>
+    </>
+  );
 }

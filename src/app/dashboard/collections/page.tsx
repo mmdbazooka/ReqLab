@@ -1,8 +1,278 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowUpRight,Folder,Plus,Search,Pencil,Trash2 } from "lucide-react";
+import {
+  ArrowUpRight,
+  Folder,
+  Plus,
+  Search,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 import { useRequests } from "@/features/requests/provider";
 import { usePreferences } from "@/components/preferences";
-import { PageTitle,EmptyState,Modal } from "@/components/ui";
-export default function Collections(){const {data,update}=useRequests();const {t}=usePreferences();const [query,setQuery]=useState("");const [edit,setEdit]=useState<{id:string;name:string;description:string}|null>(null);const [deleting,setDeleting]=useState<string|null>(null);const [requestDelete,setRequestDelete]=useState<string|null>(null);const collections=data.collections.filter(c=>(c.name+" "+c.description).toLowerCase().includes(query.toLowerCase()));return <><PageTitle eyebrow={t("A LITTLE STRUCTURE GOES A LONG WAY","کمی نظم، راه زیادی می‌رود")} title={t("A home for every endpoint.","خانه‌ای برای هر آدرس.")} description={t("Group related requests, keep your work tidy, and pick up the thread anytime.","درخواست‌های مرتبط را گروه کن، کارت را مرتب نگه دار و هر زمان ادامه بده.")} action={<button className="button primary" onClick={()=>setEdit({id:crypto.randomUUID(),name:"",description:""})}><Plus size={15}/>{t("New collection","کالکشن جدید")}</button>}/><div className="toolbar"><label className="search-field max-w-md w-full"><Search size={15}/><input aria-label={t("Search collections","جست‌وجوی کالکشن‌ها")} placeholder={t("Find a collection…","یک کالکشن پیدا کن…")} value={query} onChange={e=>setQuery(e.target.value)}/></label></div><div className="collection-grid">{collections.map(c=><article className="collection-card" key={c.id}><div className="flex justify-between mb-5"><span className="row-icon"><Folder size={19}/></span><div className="flex gap-1"><button className="icon-button" onClick={()=>setEdit(c)} aria-label={t("Edit collection","ویرایش کالکشن")}><Pencil size={14}/></button><button className="icon-button" onClick={()=>setDeleting(c.id)} aria-label={t("Delete collection","حذف کالکشن")}><Trash2 size={14}/></button></div></div><h3>{c.name}</h3><p className="muted">{c.description||t("A fresh collection, full of possibility.","کالکشنی تازه، پر از امکان.")}</p><div className="border-t" style={{borderColor:"var(--line)"}}>{data.requests.filter(r=>r.collectionId===c.id).map(r=><div className="list-row !gap-2" key={r.id}><Link href={"/dashboard/workspace?id="+r.id} className="flex items-center gap-3 flex-1 min-w-0"><span className={"method "+r.method.toLowerCase()}>{r.method}</span><span className="text-[11px] truncate">{r.name}</span><ArrowUpRight size={12} className="muted ms-auto shrink-0"/></Link><button className="icon-button !p-1" onClick={()=>setRequestDelete(r.id)} aria-label={t("Delete request","حذف درخواست")}><Trash2 size={12}/></button></div>)}</div><div className="flex items-center justify-between mt-4"><span className="muted text-[10px]">{data.requests.filter(r=>r.collectionId===c.id).length} {t("requests","درخواست")}</span><Link href="/dashboard/workspace" className="text-link"><Plus size={12}/>{t("Compose request","ساخت درخواست")}</Link></div></article>)}</div>{!collections.length&&<EmptyState icon={<Folder size={24}/>} title={t("A place for your next API","جایی برای API بعدی تو")} description={t("Create a collection, or try a different search.","یک کالکشن بساز یا جست‌وجوی دیگری امتحان کن.")}/ >}{data.requests.some(r=>!r.collectionId)&&<section className="card mt-6"><h3 className="mb-3">{t("Unfiled requests","درخواست‌های بدون کالکشن")}</h3>{data.requests.filter(r=>!r.collectionId).map(r=><div key={r.id} className="list-row"><Link href={"/dashboard/workspace?id="+r.id} className="flex gap-3 items-center flex-1 min-w-0"><span className="method">{r.method}</span><span className="text-xs truncate">{r.name}</span></Link><button className="icon-button" onClick={()=>setRequestDelete(r.id)} aria-label={t("Delete request","حذف درخواست")}><Trash2 size={13}/></button></div>)}</section>}<Modal open={!!edit} onClose={()=>setEdit(null)} title={t("Make room for an API","جایی برای یک API باز کن")}>{edit&&<form className="form-stack" onSubmit={e=>{e.preventDefault();const c={...edit,name:edit.name.trim()};if(!c.name)return;update(s=>({...s,collections:s.collections.some(item=>item.id===c.id)?s.collections.map(item=>item.id===c.id?c:item):[...s.collections,c]}));setEdit(null);}}><label>{t("Name","نام")}<input autoFocus required maxLength={100} value={edit.name} onChange={e=>setEdit({...edit,name:e.target.value})} placeholder={t("e.g. My next big thing","مثلاً پروژه بزرگ بعدی من")}/></label><label>{t("Description","توضیح")}<textarea maxLength={500} value={edit.description} onChange={e=>setEdit({...edit,description:e.target.value})}/></label><button className="button primary" type="submit">{t("Save collection","ذخیره کالکشن")}</button></form>}</Modal><Modal open={!!deleting||!!requestDelete} onClose={()=>{setDeleting(null);setRequestDelete(null);}} title={t("Remove from your workspace?","از فضای کار حذف شود؟")}><p className="muted text-sm">{requestDelete?t("This saved request will be deleted. Its history is kept.","این درخواست ذخیره‌شده حذف می‌شود؛ تاریخچه باقی می‌ماند."):t("The collection will be deleted. Its requests will move to Unfiled.","کالکشن حذف می‌شود؛ درخواست‌ها به بخش بدون کالکشن منتقل می‌شوند.")}</p><div className="form-actions mt-6"><button className="button" onClick={()=>{setDeleting(null);setRequestDelete(null);}}>{t("Cancel","لغو")}</button><button className="button danger" onClick={()=>{update(s=>({...s,collections:s.collections.filter(c=>c.id!==deleting),requests:requestDelete?s.requests.filter(r=>r.id!==requestDelete):s.requests.map(r=>r.collectionId===deleting?{...r,collectionId:null}:r)}));setDeleting(null);setRequestDelete(null);}}>{t("Delete","حذف")}</button></div></Modal></>;}
+import { PageTitle, EmptyState, Modal } from "@/components/ui";
+export default function Collections() {
+  const { data, update } = useRequests();
+  const { t } = usePreferences();
+  const [query, setQuery] = useState("");
+  const [edit, setEdit] = useState<{
+    id: string;
+    name: string;
+    description: string;
+  } | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [requestDelete, setRequestDelete] = useState<string | null>(null);
+  const collections = data.collections.filter((c) =>
+    (c.name + " " + c.description).toLowerCase().includes(query.toLowerCase()),
+  );
+  return (
+    <>
+      <PageTitle
+        eyebrow={t(
+          "A LITTLE STRUCTURE GOES A LONG WAY",
+          "کمی نظم، راه زیادی می‌رود",
+        )}
+        title={t("A home for every endpoint.", "خانه‌ای برای هر آدرس.")}
+        description={t(
+          "Group related requests, keep your work tidy, and pick up the thread anytime.",
+          "درخواست‌های مرتبط را گروه کن، کارت را مرتب نگه دار و هر زمان ادامه بده.",
+        )}
+        action={
+          <button
+            className="button primary"
+            onClick={() =>
+              setEdit({ id: crypto.randomUUID(), name: "", description: "" })
+            }
+          >
+            <Plus size={15} />
+            {t("New collection", "کالکشن جدید")}
+          </button>
+        }
+      />
+      <div className="toolbar">
+        <label className="search-field max-w-md w-full">
+          <Search size={15} />
+          <input
+            aria-label={t("Search collections", "جست‌وجوی کالکشن‌ها")}
+            placeholder={t("Find a collection…", "یک کالکشن پیدا کن…")}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </label>
+      </div>
+      <div className="collection-grid">
+        {collections.map((c) => (
+          <article className="collection-card" key={c.id}>
+            <div className="flex justify-between mb-5">
+              <span className="row-icon">
+                <Folder size={19} />
+              </span>
+              <div className="flex gap-1">
+                <button
+                  className="icon-button"
+                  onClick={() => setEdit(c)}
+                  aria-label={t("Edit collection", "ویرایش کالکشن")}
+                >
+                  <Pencil size={14} />
+                </button>
+                <button
+                  className="icon-button"
+                  onClick={() => setDeleting(c.id)}
+                  aria-label={t("Delete collection", "حذف کالکشن")}
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            </div>
+            <h3>{c.name}</h3>
+            <p className="muted">
+              {c.description ||
+                t(
+                  "A fresh collection, full of possibility.",
+                  "کالکشنی تازه، پر از امکان.",
+                )}
+            </p>
+            <div className="border-t" style={{ borderColor: "var(--line)" }}>
+              {data.requests
+                .filter((r) => r.collectionId === c.id)
+                .map((r) => (
+                  <div className="list-row !gap-2" key={r.id}>
+                    <Link
+                      href={"/dashboard/workspace?id=" + r.id}
+                      className="flex items-center gap-3 flex-1 min-w-0"
+                    >
+                      <span className={"method " + r.method.toLowerCase()}>
+                        {r.method}
+                      </span>
+                      <span className="text-[11px] truncate">{r.name}</span>
+                      <ArrowUpRight
+                        size={12}
+                        className="muted ms-auto shrink-0"
+                      />
+                    </Link>
+                    <button
+                      className="icon-button !p-1"
+                      onClick={() => setRequestDelete(r.id)}
+                      aria-label={t("Delete request", "حذف درخواست")}
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  </div>
+                ))}
+            </div>
+            <div className="flex items-center justify-between mt-4">
+              <span className="muted text-[10px]">
+                {data.requests.filter((r) => r.collectionId === c.id).length}{" "}
+                {t("requests", "درخواست")}
+              </span>
+              <Link href="/dashboard/workspace" className="text-link">
+                <Plus size={12} />
+                {t("Compose request", "ساخت درخواست")}
+              </Link>
+            </div>
+          </article>
+        ))}
+      </div>
+      {!collections.length && (
+        <EmptyState
+          icon={<Folder size={24} />}
+          title={t("A place for your next API", "جایی برای API بعدی تو")}
+          description={t(
+            "Create a collection, or try a different search.",
+            "یک کالکشن بساز یا جست‌وجوی دیگری امتحان کن.",
+          )}
+        />
+      )}
+      {data.requests.some((r) => !r.collectionId) && (
+        <section className="card mt-6">
+          <h3 className="mb-3">
+            {t("Unfiled requests", "درخواست‌های بدون کالکشن")}
+          </h3>
+          {data.requests
+            .filter((r) => !r.collectionId)
+            .map((r) => (
+              <div key={r.id} className="list-row">
+                <Link
+                  href={"/dashboard/workspace?id=" + r.id}
+                  className="flex gap-3 items-center flex-1 min-w-0"
+                >
+                  <span className="method">{r.method}</span>
+                  <span className="text-xs truncate">{r.name}</span>
+                </Link>
+                <button
+                  className="icon-button"
+                  onClick={() => setRequestDelete(r.id)}
+                  aria-label={t("Delete request", "حذف درخواست")}
+                >
+                  <Trash2 size={13} />
+                </button>
+              </div>
+            ))}
+        </section>
+      )}
+      <Modal
+        open={!!edit}
+        onClose={() => setEdit(null)}
+        title={t("Make room for an API", "جایی برای یک API باز کن")}
+      >
+        {edit && (
+          <form
+            className="form-stack"
+            onSubmit={(e) => {
+              e.preventDefault();
+              const c = { ...edit, name: edit.name.trim() };
+              if (!c.name) return;
+              update((s) => ({
+                ...s,
+                collections: s.collections.some((item) => item.id === c.id)
+                  ? s.collections.map((item) => (item.id === c.id ? c : item))
+                  : [...s.collections, c],
+              }));
+              setEdit(null);
+            }}
+          >
+            <label>
+              {t("Name", "نام")}
+              <input
+                autoFocus
+                required
+                maxLength={100}
+                value={edit.name}
+                onChange={(e) => setEdit({ ...edit, name: e.target.value })}
+                placeholder={t(
+                  "e.g. My next big thing",
+                  "مثلاً پروژه بزرگ بعدی من",
+                )}
+              />
+            </label>
+            <label>
+              {t("Description", "توضیح")}
+              <textarea
+                maxLength={500}
+                value={edit.description}
+                onChange={(e) =>
+                  setEdit({ ...edit, description: e.target.value })
+                }
+              />
+            </label>
+            <button className="button primary" type="submit">
+              {t("Save collection", "ذخیره کالکشن")}
+            </button>
+          </form>
+        )}
+      </Modal>
+      <Modal
+        open={!!deleting || !!requestDelete}
+        onClose={() => {
+          setDeleting(null);
+          setRequestDelete(null);
+        }}
+        title={t("Remove from your workspace?", "از فضای کار حذف شود؟")}
+      >
+        <p className="muted text-sm">
+          {requestDelete
+            ? t(
+                "This saved request will be deleted. Its history is kept.",
+                "این درخواست ذخیره‌شده حذف می‌شود؛ تاریخچه باقی می‌ماند.",
+              )
+            : t(
+                "The collection will be deleted. Its requests will move to Unfiled.",
+                "کالکشن حذف می‌شود؛ درخواست‌ها به بخش بدون کالکشن منتقل می‌شوند.",
+              )}
+        </p>
+        <div className="form-actions mt-6">
+          <button
+            className="button"
+            onClick={() => {
+              setDeleting(null);
+              setRequestDelete(null);
+            }}
+          >
+            {t("Cancel", "لغو")}
+          </button>
+          <button
+            className="button danger"
+            onClick={() => {
+              update((s) => ({
+                ...s,
+                collections: s.collections.filter((c) => c.id !== deleting),
+                requests: requestDelete
+                  ? s.requests.filter((r) => r.id !== requestDelete)
+                  : s.requests.map((r) =>
+                      r.collectionId === deleting
+                        ? { ...r, collectionId: null }
+                        : r,
+                    ),
+              }));
+              setDeleting(null);
+              setRequestDelete(null);
+            }}
+          >
+            {t("Delete", "حذف")}
+          </button>
+        </div>
+      </Modal>
+    </>
+  );
+}

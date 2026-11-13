@@ -1,8 +1,188 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { Clock3,Search,Trash2,RotateCcw } from "lucide-react";
+import { Clock3, Search, Trash2, RotateCcw } from "lucide-react";
 import { useRequests } from "@/features/requests/provider";
 import { usePreferences } from "@/components/preferences";
-import { PageTitle,EmptyState,Modal } from "@/components/ui";
-export default function History(){const {data,update}=useRequests();const {t,locale}=usePreferences();const [query,setQuery]=useState("");const [filter,setFilter]=useState("all");const [clear,setClear]=useState(false);const history=data.history.filter(h=>(h.request.name+" "+h.request.url).toLowerCase().includes(query.toLowerCase())&&(filter==="all"||(filter==="success"?h.response&&h.response.status<400:!h.response||h.response.status>=400)));return <><PageTitle eyebrow={t("EVERY REQUEST HAS A STORY","هر درخواست یک داستان دارد")} title={t("Nothing gets lost in the flow.","هیچ چیز در جریان کار گم نمی‌شود.")} description={t("Revisit your last 10 requests, inspect the response, and give it another go.","۱۰ درخواست آخر را مرور کن، پاسخ را بررسی کن و دوباره اجرا کن.")} action={<button className="button" disabled={!data.history.length} onClick={()=>setClear(true)}><Trash2 size={14}/>{t("Clear history","پاک کردن تاریخچه")}</button>}/><div className="toolbar"><label className="search-field flex-1"><Search size={15}/><input aria-label={t("Search history","جست‌وجوی تاریخچه")} value={query} onChange={e=>setQuery(e.target.value)} placeholder={t("Find a request…","یک درخواست پیدا کن…")}/></label><select value={filter} onChange={e=>setFilter(e.target.value)} aria-label={t("Filter by result","فیلتر بر اساس نتیجه")}><option value="all">{t("All results","همه نتایج")}</option><option value="success">{t("Successful","موفق")}</option><option value="failed">{t("Failed","ناموفق")}</option></select></div>{history.length?<div className="card !p-0 table-scroll"><table className="history-table"><thead><tr>{[t("Request","درخواست"),t("Status","وضعیت"),t("Time","زمان"),t("When","زمان اجرا"),t("Replay","بازپخش")].map(label=><th key={label}>{label}</th>)}</tr></thead><tbody>{history.map(h=><tr key={h.id}><td><div className="flex items-center gap-3"><span className={"method "+h.request.method.toLowerCase()}>{h.request.method}</span><div><p>{h.request.name}</p><p className="muted mono text-[10px] history-url mt-1" dir="ltr">{h.request.url}</p></div></div></td><td><span className="badge" style={{color:h.response&&h.response.status<400?"var(--accent)":"#e98191"}}>{h.response?.status||t("Error","خطا")}</span></td><td className="mono">{h.response?`${h.response.duration} ms`:"—"}</td><td className="muted whitespace-nowrap">{new Date(h.createdAt).toLocaleString(locale==="fa"?"fa-IR":"en-US",{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})}</td><td><Link className="icon-button" href={"/dashboard/workspace?history="+h.id} aria-label={t("Replay request","بازپخش درخواست")}><RotateCcw size={15}/></Link></td></tr>)}</tbody></table></div>:<EmptyState icon={<Clock3 size={25}/>} title={t("A clean slate","یک شروع تازه")} description={t("Send a request from the workspace. Your recent runs will appear here.","از محیط کار درخواست بفرست؛ اجراهای اخیر اینجا ظاهر می‌شوند.")} action={<Link href="/dashboard/workspace" className="button primary">{t("Open workspace","باز کردن محیط کار")}</Link>}/>}<Modal open={clear} onClose={()=>setClear(false)} title={t("Clear your recent history?","تاریخچه اخیر پاک شود؟")}><p className="muted text-sm">{t("Saved requests and collections will remain. This removes the stored responses and recent runs.","درخواست‌ها و کالکشن‌های ذخیره‌شده باقی می‌مانند؛ پاسخ‌ها و اجراهای اخیر حذف می‌شوند.")}</p><div className="form-actions mt-6"><button className="button" onClick={()=>setClear(false)}>{t("Cancel","لغو")}</button><button className="button danger" onClick={()=>{update(s=>({...s,history:[]}));setClear(false);}}>{t("Clear history","پاک کردن تاریخچه")}</button></div></Modal></>;}
+import { PageTitle, EmptyState, Modal } from "@/components/ui";
+export default function History() {
+  const { data, update } = useRequests();
+  const { t, locale } = usePreferences();
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState("all");
+  const [clear, setClear] = useState(false);
+  const history = data.history.filter(
+    (h) =>
+      (h.request.name + " " + h.request.url)
+        .toLowerCase()
+        .includes(query.toLowerCase()) &&
+      (filter === "all" ||
+        (filter === "success"
+          ? h.response && h.response.status < 400
+          : !h.response || h.response.status >= 400)),
+  );
+  return (
+    <>
+      <PageTitle
+        eyebrow={t("EVERY REQUEST HAS A STORY", "هر درخواست یک داستان دارد")}
+        title={t(
+          "Nothing gets lost in the flow.",
+          "هیچ چیز در جریان کار گم نمی‌شود.",
+        )}
+        description={t(
+          "Revisit your last 10 requests, inspect the response, and give it another go.",
+          "۱۰ درخواست آخر را مرور کن، پاسخ را بررسی کن و دوباره اجرا کن.",
+        )}
+        action={
+          <button
+            className="button"
+            disabled={!data.history.length}
+            onClick={() => setClear(true)}
+          >
+            <Trash2 size={14} />
+            {t("Clear history", "پاک کردن تاریخچه")}
+          </button>
+        }
+      />
+      <div className="toolbar">
+        <label className="search-field flex-1">
+          <Search size={15} />
+          <input
+            aria-label={t("Search history", "جست‌وجوی تاریخچه")}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t("Find a request…", "یک درخواست پیدا کن…")}
+          />
+        </label>
+        <select
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          aria-label={t("Filter by result", "فیلتر بر اساس نتیجه")}
+        >
+          <option value="all">{t("All results", "همه نتایج")}</option>
+          <option value="success">{t("Successful", "موفق")}</option>
+          <option value="failed">{t("Failed", "ناموفق")}</option>
+        </select>
+      </div>
+      {history.length ? (
+        <div className="card !p-0 table-scroll">
+          <table className="history-table">
+            <thead>
+              <tr>
+                {[
+                  t("Request", "درخواست"),
+                  t("Status", "وضعیت"),
+                  t("Time", "زمان"),
+                  t("When", "زمان اجرا"),
+                  t("Replay", "بازپخش"),
+                ].map((label) => (
+                  <th key={label}>{label}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {history.map((h) => (
+                <tr key={h.id}>
+                  <td>
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={"method " + h.request.method.toLowerCase()}
+                      >
+                        {h.request.method}
+                      </span>
+                      <div>
+                        <p>{h.request.name}</p>
+                        <p
+                          className="muted mono text-[10px] history-url mt-1"
+                          dir="ltr"
+                        >
+                          {h.request.url}
+                        </p>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span
+                      className="badge"
+                      style={{
+                        color:
+                          h.response && h.response.status < 400
+                            ? "var(--accent)"
+                            : "#e98191",
+                      }}
+                    >
+                      {h.response?.status || t("Error", "خطا")}
+                    </span>
+                  </td>
+                  <td className="mono">
+                    {h.response ? `${h.response.duration} ms` : "—"}
+                  </td>
+                  <td className="muted whitespace-nowrap">
+                    {new Date(h.createdAt).toLocaleString(
+                      locale === "fa" ? "fa-IR" : "en-US",
+                      {
+                        month: "short",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      },
+                    )}
+                  </td>
+                  <td>
+                    <Link
+                      className="icon-button"
+                      href={"/dashboard/workspace?history=" + h.id}
+                      aria-label={t("Replay request", "بازپخش درخواست")}
+                    >
+                      <RotateCcw size={15} />
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <EmptyState
+          icon={<Clock3 size={25} />}
+          title={t("A clean slate", "یک شروع تازه")}
+          description={t(
+            "Send a request from the workspace. Your recent runs will appear here.",
+            "از محیط کار درخواست بفرست؛ اجراهای اخیر اینجا ظاهر می‌شوند.",
+          )}
+          action={
+            <Link href="/dashboard/workspace" className="button primary">
+              {t("Open workspace", "باز کردن محیط کار")}
+            </Link>
+          }
+        />
+      )}
+      <Modal
+        open={clear}
+        onClose={() => setClear(false)}
+        title={t("Clear your recent history?", "تاریخچه اخیر پاک شود؟")}
+      >
+        <p className="muted text-sm">
+          {t(
+            "Saved requests and collections will remain. This removes the stored responses and recent runs.",
+            "درخواست‌ها و کالکشن‌های ذخیره‌شده باقی می‌مانند؛ پاسخ‌ها و اجراهای اخیر حذف می‌شوند.",
+          )}
+        </p>
+        <div className="form-actions mt-6">
+          <button className="button" onClick={() => setClear(false)}>
+            {t("Cancel", "لغو")}
+          </button>
+          <button
+            className="button danger"
+            onClick={() => {
+              update((s) => ({ ...s, history: [] }));
+              setClear(false);
+            }}
+          >
+            {t("Clear history", "پاک کردن تاریخچه")}
+          </button>
+        </div>
+      </Modal>
+    </>
+  );
+}
