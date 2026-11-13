@@ -23,18 +23,6 @@ export default function Landing() {
     <div className="reqlab-landing">
       <nav className="rl-nav">
         <Logo />
-        <div className="rl-nav-links">
-          <a href="#workflow">{t("The workflow", "شیوه کار")}</a>
-          <a href="#details">{t("Under the hood", "نگاه دقیق‌تر")}</a>
-          <a
-            href="https://github.com/mmdbazooka/ReqLab"
-            target="_blank"
-            rel="noreferrer"
-          >
-            GitHub
-            <ArrowUpRight size={11} />
-          </a>
-        </div>
         <div className="flex items-center gap-4">
           <PreferencesControls />
           <Link href="/dashboard" className="button primary">

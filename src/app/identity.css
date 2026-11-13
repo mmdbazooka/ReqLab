@@ -919,7 +919,7 @@ textarea {
   justify-content: space-between;
   align-items: center;
   gap: 25px;
-  max-width: 1320px;
+  max-width: 1920px;
   margin: auto;
   padding: 24px 40px;
   border-bottom: 1px solid var(--line);
@@ -944,7 +944,7 @@ textarea {
   align-items: center;
   gap: 55px;
   padding: 95px 40px 80px;
-  max-width: 1320px;
+  max-width: 1920px;
   margin: auto;
 }
 .rl-product-label {
@@ -1175,7 +1175,7 @@ textarea {
   display: none;
 }
 .rl-features {
-  max-width: 1320px;
+  max-width: 1920px;
   margin: auto;
   padding: 85px 40px 0;
 }
@@ -1288,7 +1288,7 @@ textarea {
   grid-template-columns: 1fr 1.2fr;
   gap: 100px;
   padding: 85px 40px;
-  max-width: 1320px;
+  max-width: 1920px;
   margin: auto;
 }
 .rl-ground-rules h2 {
@@ -1333,13 +1333,14 @@ textarea {
   padding: 15px 20px 0 0;
 }
 .rl-last-call {
-  max-width: 1240px;
+  max-width: 1840px;
   margin: auto;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 30px;
   padding: 35px;
+  margin-inline: 25px;
   border: 1px solid var(--line);
   border-inline-start: 3px solid var(--accent);
   background: var(--surface);
@@ -1358,7 +1359,7 @@ textarea {
   gap: 25px;
   justify-content: space-between;
   margin: 60px auto 0;
-  max-width: 1320px;
+  max-width: 1920px;
   padding: 25px 40px;
   border-top: 1px solid var(--line);
 }
@@ -1414,9 +1415,6 @@ textarea {
   }
   .rl-ground-rules {
     gap: 55px;
-  }
-  .rl-last-call {
-    margin-inline: 30px;
   }
   .rl-nav-links {
     gap: 20px;
@@ -1480,7 +1478,6 @@ textarea {
     font-size: 33px;
   }
   .rl-last-call {
-    margin-inline: 25px;
     padding: 25px;
     flex-wrap: wrap;
     gap: 25px;
