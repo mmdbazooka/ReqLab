@@ -7,42 +7,50 @@ const browser = await chromium.launch({
     process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ||
     (existsSync("/usr/bin/chromium") ? "/usr/bin/chromium" : undefined),
 });
-try {
+async function capture(
+  route,
+  name,
+  theme = "dark",
+  locale = "en",
+  mobile = false,
+) {
   const page = await browser.newPage({
-    viewport: { width: 1440, height: 1000 },
+    viewport: mobile
+      ? { width: 390, height: 844 }
+      : { width: 1440, height: 1000 },
     deviceScaleFactor: 1,
   });
   await page.emulateMedia({ reducedMotion: "reduce" });
-  for (const [route, name] of [
-    ["/", "landing-dark"],
-    ["/dashboard", "dashboard-dark"],
-  ]) {
-    await page.goto(base + route);
-    await page.getByRole("heading", { level: 1 }).first().waitFor();
-    await page.evaluate(() => document.fonts.ready);
-    await page.screenshot({
-      path: `docs/screenshots/${name}.png`,
-      fullPage: true,
-    });
-  }
-  await page.getByRole("button", { name: "Switch to Persian" }).click();
-  await page.getByRole("button", { name: "تغییر پوسته" }).click();
+  await page.addInitScript(
+    ({ theme, locale }) =>
+      localStorage.setItem(
+        "reqlab-preferences",
+        JSON.stringify({ theme, locale }),
+      ),
+    { theme, locale },
+  );
+  await page.goto(base + route);
+  await page.getByRole("heading", { level: 1 }).first().waitFor();
+  await page.waitForFunction(
+    ({ theme, locale }) =>
+      document.documentElement.dataset.theme === theme &&
+      document.documentElement.lang === locale,
+    { theme, locale },
+  );
+  await page.evaluate(() => document.fonts.ready);
   await page.screenshot({
-    path: "docs/screenshots/dashboard-fa-light.png",
+    path: `docs/screenshots/${name}.png`,
     fullPage: true,
   });
-  const mobile = await browser.newPage({
-    viewport: { width: 390, height: 844 },
-    deviceScaleFactor: 1,
-  });
-  await mobile.emulateMedia({ reducedMotion: "reduce" });
-  await mobile.goto(base + "/dashboard");
-  await mobile.getByRole("heading", { level: 1 }).waitFor();
-  await mobile.evaluate(() => document.fonts.ready);
-  await mobile.screenshot({
-    path: "docs/screenshots/mobile.png",
-    fullPage: true,
-  });
+  await page.close();
+}
+try {
+  await capture("/", "landing-dark");
+  await capture("/", "landing-light", "light");
+  await capture("/dashboard", "dashboard-dark");
+  await capture("/dashboard", "dashboard-light", "light");
+  await capture("/dashboard", "dashboard-fa-light", "light", "fa");
+  await capture("/dashboard", "mobile", "dark", "en", true);
 } finally {
   await browser.close();
 }
