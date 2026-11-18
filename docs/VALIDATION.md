@@ -18,4 +18,4 @@ The GitHub Actions workflow is committed; its remote run status has not been ver
 
 ## Design refresh
 
-The landing and dashboard were redesigned with independent visual identities. Confirmed 48 combined landing/dashboard layouts across English/Persian, light/dark, and 360/768/1440 px widths without document overflow. The new screenshots are generated with explicit stored preferences so light/dark filenames remain accurate regardless of each app’s defaults. See [Design](DESIGN.md) for the product-specific decisions.
+The landing and dashboard were redesigned with independent visual identities. Confirmed "48" combined landing/dashboard layouts across English/Persian, light/dark, and 360/768/1440 px widths without document overflow. The new screenshots are generated with explicit stored preferences so light/dark filenames remain accurate regardless of each app’s defaults. See [Design](DESIGN.md) for the product-specific decisions.
